@@ -1,0 +1,20 @@
+#### Wanting to get overlap of locations of PS and RNAseq derived TC;
+# want 3 different overlaps (based on strandedness):
+# 1. positive PS and positive RNAseq transcript
+# 2. negative PS and negative RNAseq transcript
+# 3. all PS and no strand identified RNAseq transcript;
+
+cd /data2/kiemele/WGCNA/HXBbrain_forPhenogen/20141218
+export PATH=$PATH:/usr/local/bedtools2/bin
+
+#1: Positive Strands
+intersectBed -a PSpos.txt -b gtfFile_pos.txt -wa -wb> positivePSandRNAseqTCoverlap.txt
+
+#2: Negative Strands
+intersectBed -a PSneg.txt -b gtfFile_neg.txt -wa -wb> negativePSandRNAseqTCoverlap.txt
+
+#3: Non-identified Strands
+intersectBed -a PSall.txt -b gtfFile_noStrand.txt -wa -wb> noStrandPSandRNAseqTCoverlap.txt
+
+
+

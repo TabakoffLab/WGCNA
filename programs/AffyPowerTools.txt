@@ -1,0 +1,22 @@
+########## Affymetrix Power Tools ################
+
+#To get DABG for the RNAseq derived TC;
+
+#folder were the original CEL files are:
+cd /data2/saba/fromDataUsers/HXBExonData/Brain/CEL.Files
+export PATH=$PATH:/usr/local/apt-1.15.2/bin
+
+
+apt-probeset-summarize
+        -p /data2/kiemele/HXB/UpdateRatGenome/try20121012.rn5/results/RaEx-1_0-st-v1.r2.rn5masked.pgf
+        -c /data2/kiemele/HXB/UpdateRatGenome/try20121012.rn5/results/RaEx-1_0-st-v1.r2.clf
+        -b /data2/kiemele/HXB/UpdateRatGenome/try20121012.rn5/results/RaEx-1_0-st-v1.r2.antigenomic.bgp
+        --qc-probesets /data2/kiemele/HXB/UpdateRatGenome/try20121012.rn5/results/RaEx-1_0-st-v1.r2.qcc
+        -m /data2/kiemele/WGCNA/HXBbrain_forPhenogen/20141218/dabgForPhenogen/RaEx-1_0-st-v1.r2.dt1.rn5.MASKED.HXB.RNAseqTC_brain20141218.mps
+        -a rma dabg
+        -o /data2/kiemele/WGCNA/HXBbrain_forPhenogen/20141218/dabgForPhenogen/Output
+        --cel-files fileListing.brain.noOutliers.txt
+	--cc-chp-output
+	
+		
+apt-probeset-summarize -p /data2/kiemele/HXB/UpdateRatGenome/try20121012.rn5/results/RaEx-1_0-st-v1.r2.rn5masked.pgf -c /data2/kiemele/HXB/UpdateRatGenome/try20121012.rn5/results/RaEx-1_0-st-v1.r2.clf -b /data2/kiemele/HXB/UpdateRatGenome/try20121012.rn5/results/RaEx-1_0-st-v1.r2.antigenomic.bgp --qc-probesets /data2/kiemele/HXB/UpdateRatGenome/try20121012.rn5/results/RaEx-1_0-st-v1.r2.qcc -m /data2/kiemele/WGCNA/HXBbrain_forPhenogen/20141218/dabgForPhenogen/RaEx-1_0-st-v1.r2.dt1.rn5.MASKED.HXB.RNAseqTC_brain20141218.mps -a dabg -o /data2/kiemele/WGCNA/HXBbrain_forPhenogen/20141218/dabgForPhenogen/Output --cel-files fileListing.brain.noOutliers.txt 
