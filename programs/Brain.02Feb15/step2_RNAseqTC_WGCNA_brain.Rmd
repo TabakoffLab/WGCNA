@@ -1,0 +1,87 @@
+```{r}
+rm(list=ls())
+library(WGCNA)
+options(strainsAsFactors=FALSE)
+rData.path="/Volumes/saba/wgcna.PhenoGen/Rdata/"
+image.path="/Volumes/saba/wgcna.PhenoGen/images/"
+data.path="/Volumes/saba/wgcna.PhenoGen/data/"
+
+
+#################
+#   Load Data   #
+#################
+load(paste(rData.path,"heritExprs_strainMeans.Rdata",sep=""))
+
+dim(heritMeans)
+heritMeans[1:5, 1:5]
+
+datExpr = t(heritMeans)
+dim(datExpr)
+
+#########################################
+# Check out the Soft Thresholding Power #
+#########################################
+#NOTE: OPTIONAL... I've been using the default value for power;
+# Choose a set of soft-thresholding powers
+powers = c(c(1:15), seq(from = 16, to=20, by=2))
+
+# Call the network topology analysis function
+sft = pickSoftThreshold(datExpr, powerVector = powers, verbose = 5)
+# Plot the results:
+sizeGrWindow(9, 5)
+par(mfrow = c(1,2));
+cex1 = 0.8;
+# Scale-free topology fit index as a function of the soft-thresholding power
+
+pdf(file=paste(image.path,"SoftThresholdingPower.Brain.05Feb15.pdf",sep=""))
+plot(sft$fitIndices[,1], -sign(sft$fitIndices[,3])*sft$fitIndices[,2],
+xlab="Soft Threshold (power)",ylab="Scale Free Topology Model Fit,signed R^2",type="n",
+main = paste("Scale independence"));
+text(sft$fitIndices[,1], -sign(sft$fitIndices[,3])*sft$fitIndices[,2],
+labels=powers,cex=cex1,col="red")
+# this line corresponds to using an R^2 cut-off of h
+abline(h=0.80,col="red")
+
+# Mean connectivity as a function of the soft-thresholding power
+plot(sft$fitIndices[,1], sft$fitIndices[,5],
+xlab="Soft Threshold (power)",ylab="Mean Connectivity", type="n",
+main = paste("Mean connectivity"))
+text(sft$fitIndices[,1], sft$fitIndices[,5], labels=powers, cex=cex1,col="red")
+
+dev.off()
+
+save(sft, file=paste(rData.path,"SoftThresholdingPower.Rdata",sep=""))
+
+
+##############################################################
+##  WGCNA in HXB Brain Expression Data (RNAseq Derived TC)  ##
+##############################################################
+dim(datExpr)
+net = blockwiseModules(datExpr,power=8, minModuleSize=5, deepSplit=4, numericLabels=TRUE,pamRespectsDendro=FALSE,saveTOMs=TRUE, saveTOMFileBase="brain",verbose=3,networkType="unsigned", corType="bicor")
+
+table(net$colors)
+
+moduleLabels = net$colors
+moduleColors = labels2colors(net$colors)
+TC = colnames(datExpr)
+
+moduleMembership = cbind(TC, moduleLabels, moduleColors)
+length(unique(moduleMembership[,"moduleLabels"]))
+#length = 962 (includes the grey module so 800 modules);
+write.csv(moduleMembership, file=paste(data.path,"moduleMembership.brain.05Feb15.csv",sep=""),row.names=FALSE)
+MEs = net$MEs
+save(net,moduleLabels,moduleColors,MEs,file=paste(rData.path,"HXBbrain.RNAseqTC.WGCNAconstruct.05Feb15.Rdata",sep=""))
+
+sizes = as.numeric(table(moduleMembership[-which(moduleMembership[,"moduleLabels"]=="0"),"moduleColors"]))
+summary(sizes)
+#mean = 16.13
+#median = 8
+#max = 1780
+#min = 5
+
+MEs_noGray = MEs[,-which(colnames(MEs)=="ME0")]
+write.csv(MEs_noGray, file=paste(data.path,"MEs.csv",sep=""))
+
+#the gray module (tc unassigned to a module) is how big:
+dim(moduleMembership[which(moduleMembership[,"moduleLabels"]=="0"),])
+#154 TC in the grey module
