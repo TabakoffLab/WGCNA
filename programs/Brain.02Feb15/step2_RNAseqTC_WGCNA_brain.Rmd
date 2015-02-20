@@ -33,7 +33,7 @@ par(mfrow = c(1,2));
 cex1 = 0.8;
 # Scale-free topology fit index as a function of the soft-thresholding power
 
-pdf(file=paste(image.path,"SoftThresholdingPower.Brain.05Feb15.pdf",sep=""))
+pdf(file=paste(image.path,"SoftThresholdingPower.Brain.20Feb15.pdf",sep=""))
 plot(sft$fitIndices[,1], -sign(sft$fitIndices[,3])*sft$fitIndices[,2],
 xlab="Soft Threshold (power)",ylab="Scale Free Topology Model Fit,signed R^2",type="n",
 main = paste("Scale independence"));
