@@ -10,11 +10,11 @@ library(WGCNA)
 options(strainsAsFactors=FALSE)
 rData.path="/Volumes/saba/wgcna.PhenoGen/Rdata/"
 data.path="/Volumes/saba/wgcna.PhenoGen/data/"
-results.path="/Volumes/saba/WGCNA/HXBbrain_forPhenogen/20150209/"
+results.path="/Volumes/saba/WGCNA/HXBbrain_forPhenogen/20150219/"
 
 #load in MEs;
-load(paste(rData.path,"HXBbrain.RNAseqTC.WGCNAconstruct.05Feb15.Rdata",sep=""))
-save(MEs,moduleColors,moduleLabels,net,file=paste(results.path,"HXBbrain.RNAseqTC.WGCNAcontruct.20150209.Rdata"))
+load(paste(rData.path,"HXBbrain.RNAseqTC.WGCNAconstruct.26Feb15.Rdata",sep=""))
+save(MEs,moduleColors,moduleLabels,net,file=paste(results.path,"HXBbrain.RNAseqTC.WGCNAcontruct.20150226.Rdata"))
 
 #same strains as brain...
 key = read.csv(file=paste(data.path,"origStrainToStrainKey.csv",sep=""))
@@ -32,7 +32,7 @@ MEs_new  = MEs_new[,-c(1:2)]
 
 MEs_noGray = MEs_new[,-which(colnames(MEs_new)=="ME0")]
 
-write.csv(MEs_noGray, file=paste(data.path,"Brain.MEs_noGray.05Feb15.csv",sep=""))
+write.csv(MEs_noGray, file=paste(data.path,"Brain.MEs_noGray.26Feb15.csv",sep=""))
 ```
 
 Generate DABG P-values based on new transcript clusters
@@ -79,9 +79,9 @@ PStoTCkey_usedInAnalysis = merge(as.matrix(rownames(heritMeans)), PSclustKey, by
 colnames(PStoTCkey_usedInAnalysis) = c("transcript_cluster_id", "probeset_id")
 
 dim(PStoTCkey_usedInAnalysis)
-#75,714 probesets
+#78,619 probesets
 length(unique(PStoTCkey_usedInAnalysis[,"transcript_cluster_id"]))
-#15,668 unqiue TC
+#16,624 unqiue TC
 
 
 ### Load in file With PS and # probes (see above);
@@ -104,7 +104,7 @@ python /Users/laurasaba/Documents/wgcna.PhenoGen/programs/Brain.02Feb15/getMPSfi
 cd /data2/saba/fromDataUsers/HXBExonData/Brain/CEL.Files
 export PATH=$PATH:/usr/local/apt-1.15.2/bin
 
-apt-probeset-summarize -p /data2/saba/Affymetrix/SNP.Masks/Exon.Array/Rat/Results/RaEx-1_0-st-v1.r2.rn5masked.pgf -c /data2/saba/fromDataUsers/HXBExonData/Annotation/RaEx-1_0-st-v1.r2.clf -b /data2/saba/fromDataUsers/HXBExonData/Annotation/RaEx-1_0-st-v1.r2.antigenomic.bgp --qc-probesets /data2/saba/fromDataUsers/HXBExonData/Annotation/RaEx-1_0-st-v1.r2.qcc -m /data2/saba/wgcna.PhenoGen/data/RaEx-1_0-st-v1.r2.dt1.rn5.MASKED.HXB.RNAseqTC.05Feb16.mps -a dabg -o /data2/saba/WGCNA/HXBbrain_forPhenogen/20150209/dabgForPhenogen/Output --cel-files fileListing.brain.noOutliers.txt --cc-chp-output
+apt-probeset-summarize -p /data2/saba/Affymetrix/SNP.Masks/Exon.Array/Rat/Results/RaEx-1_0-st-v1.r2.rn5masked.pgf -c /data2/saba/fromDataUsers/HXBExonData/Annotation/RaEx-1_0-st-v1.r2.clf -b /data2/saba/fromDataUsers/HXBExonData/Annotation/RaEx-1_0-st-v1.r2.antigenomic.bgp --qc-probesets /data2/saba/fromDataUsers/HXBExonData/Annotation/RaEx-1_0-st-v1.r2.qcc -m /data2/saba/wgcna.PhenoGen/data/RaEx-1_0-st-v1.r2.dt1.rn5.MASKED.HXB.RNAseqTC.26Feb15.mps -a dabg -o /data2/saba/WGCNA/HXBbrain_forPhenogen/20150219/dabgForPhenoGen/Output --cel-files fileListing.brain.noOutliers.txt --cc-chp-output
 ```
 
 Create Adjacency Matrix For PhenoGen
@@ -112,11 +112,11 @@ Create Adjacency Matrix For PhenoGen
 
 ```{r}
 library(WGCNA)
-options(strainsAsFactors=FALSE)
+options(stringsAsFactors=FALSE)
 
 rData.path="/data2/saba/wgcna.PhenoGen/Rdata/"
 data.path="/data2/saba/wgcna.PhenoGen/data/"
-results.path="/data2/saba/WGCNA/HXBbrain_forPhenogen/20150209/"
+results.path="/data2/saba/WGCNA/HXBbrain_forPhenogen/20150219/"
 
 load(paste(rData.path,"heritExprs_strainMeans.Rdata",sep=""))
 save(heritMeans,file=paste(results.path,"heritExprs_strainMeans.Rdata",sep=""))
@@ -128,43 +128,36 @@ save(heritMeans,file=paste(results.path,"heritExprs_strainMeans.Rdata",sep=""))
 corMatrix = bicor(t(heritMeans))
 dim(corMatrix)
 
-###############################
-# Create the Adjacency Matrix #
-###############################
+save(corMatrix, file=paste(rData.path,"brain.corMatrix.07Apr15.Rdata",sep=""))
 
-adjMatrix_all = corMatrix^8
-dim(adjMatrix_all)
-
-save(adjMatrix_all, file=paste(rData.path,"brain.adjMatrix_all.09Feb15.Rdata",sep=""))
-
-###################################################
-# Create a List of Adjacency Matrices (by Module) #
-###################################################
-key = read.csv(paste(data.path,"moduleMembership.brain.05Feb15.csv",sep=""))
+#####################################################
+# Create a List of Correlation Matrices (by Module) #
+#####################################################
+key = read.csv(paste(data.path,"moduleMembership.brain.26Feb15.csv",sep=""))
 write.csv(key,file=paste(results.path,"moduleMembership.csv",sep=""),row.names=FALSE)
 
-table(rownames(adjMatrix_all)==key[,"TC"])
+table(rownames(corMatrix)==key[,"TC"])
 
 modLabs = names(table(key[,"moduleLabels"]))
 modLabs = modLabs[-which(modLabs=="0")]
 
 TCwant = list()
-adjMatricesByModule = list()
+corMatricesByModule = list()
 for(i in modLabs){  
 	TCwant[[i]] = as.vector(key[which(key[,"moduleLabels"]==i),"TC"])
-	adjMatricesByModule[[i]] = adjMatrix_all[TCwant[[i]], TCwant[[i]]]
+	corMatricesByModule[[i]] = corMatrix[TCwant[[i]], TCwant[[i]]]
 }
 
-names(adjMatricesByModule)
+names(corMatricesByModule)
 key2 = unique(key[,c(2:3)])
 
 test = c()
-for(i in names(adjMatricesByModule)){
+for(i in names(corMatricesByModule)){
 	test = c(test, as.character(key2[which(key2[,"moduleLabels"]==i), "moduleColors"]))
 }
 
-names(adjMatricesByModule) = test
-save(adjMatricesByModule, file=paste(results.path,"adjMatricesByModule.Rdata",sep=""))
+names(corMatricesByModule) = test
+save(corMatricesByModule, file=paste(results.path,"corMatricesByModule.Rdata",sep=""))
 ```
 
 Create Files For Plink
@@ -177,9 +170,9 @@ library(WGCNA)
 
 rData.path="/data2/saba/wgcna.PhenoGen/Rdata/"
 data.path="/data2/saba/wgcna.PhenoGen/data/"
-results.path="/data2/saba/WGCNA/HXBbrain_forPhenogen/20150209/"
+results.path="/data2/saba/WGCNA/HXBbrain_forPhenogen/20150219/"
 
-MEs = read.csv(file=paste(data.path,"Brain.MEs_noGray.05Feb15.csv",sep=""))
+MEs = read.csv(file=paste(data.path,"Brain.MEs_noGray.26Feb15.csv",sep=""))
 rownames(MEs) = MEs[,1]
 tMEs = t(MEs[,-1])
 
@@ -188,7 +181,7 @@ marker.strains = read.table(file="/data2/kiemele/WGCNA/HXBbrain_forPhenogen/2014
 reduced.MEs=tMEs[,as.character(marker.strains[1,-1])]
 
 forPlink = data.frame(module=rownames(reduced.MEs),reduced.MEs)
-write.table(forPlink,file=paste(results.path,"forPlink/MEs_noGray_onlyGenotypedStrains_eachRowModule_brain20150209.txt",sep=""),sep="\t",row.names=FALSE,col.names=TRUE,quote=FALSE)
+write.table(forPlink,file=paste(results.path,"forPlink/MEs_noGray_onlyGenotypedStrains_eachRowModule_brain20150226.txt",sep=""),sep="\t",row.names=FALSE,col.names=TRUE,quote=FALSE)
 ```
 
 

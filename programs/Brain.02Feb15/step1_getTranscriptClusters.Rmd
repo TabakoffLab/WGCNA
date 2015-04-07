@@ -40,7 +40,11 @@ options(stringsAsFactors=FALSE)
 rData.path="/Volumes/saba/wgcna.PhenoGen/Rdata/"
 
 load(paste(rData.path,"presentDABGandExpr.Rdata",sep=""))
-gtfFile = read.table(file="/Volumes/saba/BNLx.SHR/RNA-Seq.Brain/reconstruction/reconstruct.brain.COMBINED.19Feb15.gtf",sep="\t", header=FALSE)
+gtfFile1 = read.table(file="/Volumes/saba/BNLx.SHR/RNA-Seq.Brain/reconstruction/reconstruct.brain.polya.26Feb15.gtf",sep="\t", header=FALSE)
+gtfFile2 = read.table(file="/Volumes/saba/BNLx.SHR/RNA-Seq.Brain/reconstruction/reconstruct.brain.nonpolya.26Feb15.gtf",sep="\t", header=FALSE)
+gtfFile = rbind(gtfFile1,gtfFile2)
+
+#gtfFile = read.table(file="/Volumes/saba/BNLx.SHR/RNA-Seq.Brain/reconstruction/reconstruct.brain.COMBINED.26Feb15.gtf",sep="\t", header=FALSE)
 
 gtfFile = gtfFile[,c(1,4,5, 7, 9)]
 colnames(gtfFile) = c("chr", "start", "stop", "strand", "name")
@@ -130,9 +134,9 @@ test = table(exonInfo[,1])
 head(test)
 
 length(unique(exonInfo[,"probeset_id"]))
-#156,142 unique probesets
+#150,141 unique probesets
 length(unique(exonInfo[,"gene_id"]))
-#15,663 unique transcript clusters
+#15,118 unique transcript clusters
 
 
 # The gtf file also had transcript information on it.
@@ -156,10 +160,10 @@ load(paste(rData.path,"presentDABGandExpr.Rdata",sep=""))
 presentExonExpr = merge(uniqueExonInfo, presentExpr, by.x="probeset_id", by.y=0)
 length(unique(presentExonExpr[,"gene_id"]))
 
-#12,592 unique genes
+#12,171 unique genes
 
 length(unique(presentExonExpr[,"probeset_id"]))
-#107,229 unique probesets
+#103,085 unique probesets
 dim(presentExonExpr)
 
 presentKey = merge(uniqueExonInfo, as.matrix(rownames(presentExpr)), by.x="probeset_id", by.y=1)
@@ -174,7 +178,7 @@ sampleTree = hclust(as.dist(1-cor(presentExonExpr[,-c(1:2)])), method = "average
 # Plot the sample tree: Open a graphic output window of size 12 by 9 inches
 # The user should change the dimensions if the window is too large or too small.
 
-pdf(file = "/Volumes/saba/wgcna.PhenoGen/images/sampleClustering.brain.19Feb15.pdf", width = 12, height = 9);
+pdf(file = "/Volumes/saba/wgcna.PhenoGen/images/sampleClustering.brain.26Feb15.pdf", width = 12, height = 9);
 par(cex = 0.6);
 par(mar = c(0,4,2,0))
 plot(sampleTree, main = "Sample clustering to detect outliers", sub="", xlab="", cex.lab = 1.5, cex.axis = 1.5, cex.main = 2)
@@ -311,6 +315,22 @@ write.csv(PSclustKey, file=paste(results.path,"PStoCollapsedTransciptClusterKey.
 ################################################################################################
 #want to use the PresentExonExpr_clean... But need to remove the parentals;
 
+load(paste(rData.path,"PStoRNAseqGeneID.Rdata",sep=""))
+load(paste(rData.path,"presentDABGandExpr.Rdata",sep=""))
+#intersect the ps located in exons and present ps
+
+presentExonExpr = merge(uniqueExonInfo, presentExpr, by.x="probeset_id", by.y=0)
+toRemove = c("PD_8604_02_Brain.CEL")
+
+sig=c()
+for(i in toRemove){
+  sig = c(sig, which(colnames(presentExonExpr)==i))
+}
+
+PresentExonExpr_clean = presentExonExpr[,-sig] 
+rownames(PresentExonExpr_clean) = PresentExonExpr_clean[,1]
+PresentExonExpr_clean = PresentExonExpr_clean[,-c(1:2)]
+
 strain = sapply(strsplit(colnames(PresentExonExpr_clean), split="_", fixed=TRUE), "[[", 1)
 #remove parents and the other inbreds (PD, WKY.Lj) when generating the PCA analyses;
 toDelete = c("BN.LX", "PD", "SHR.H", "SHR.lj", "SHR.Lx", "WKY.Lj")
@@ -325,7 +345,7 @@ RIforCollapse = PresentExonExpr_clean[,-sig]
 TCcollapsed = collapseRows(RIforCollapse, PSclustKey[,"transcriptClusterCollapsed"], PSclustKey[,"probeset"], method="ME", thresholdCombine=NA)
 nrow(TCcollapsed$datETcollapsed)
 save(TCcollapsed, file=paste(rData.path,"TCcollapsed.datExpr.Rdata",sep=""))
-#24,162 TC
+#23,239 TC
 
 ##################################################################################################
 # Step 6: Calculate the heritability and apply a filter of > 0.25 to stay in dataset for network #
@@ -337,7 +357,7 @@ test = apply(expr, 1, function(a) summary(lm(a~as.factor(strain)))$r.squared)
 
 herits = cbind(rownames(expr), test)
 colnames(herits) = c("transcript", "heritability")
-write.table(herits, file=paste(data.path,"herits.clusters.HXB.brain.20Feb15.txt",sep=""), sep="\t",col.names=TRUE,row.names=FALSE,quote=FALSE)
+write.table(herits, file=paste(data.path,"herits.clusters.HXB.brain.26Feb15.txt",sep=""), sep="\t",col.names=TRUE,row.names=FALSE,quote=FALSE)
 
 heritable <- herits[herits[,2]>0.25,1]
 heritablePS <- match(heritable,rownames(expr))
@@ -345,10 +365,10 @@ heritablePS <- heritablePS[!is.na(heritablePS)]
 heritExprs <- expr[heritablePS,]
 save(heritExprs, file=paste(rData.path,"heritExprs.Rdata",sep="\t"))
 dim(heritExprs)
-#17,261 heritable TC
+#16,624 heritable TC
 
 ##look heritability across all transcript clusters
-pdf(file = paste(image.path,"heritabilities.20Feb15.pdf",sep=""), width = 12, height = 9);
+pdf(file = paste(image.path,"heritabilities.26Feb15.pdf",sep=""), width = 12, height = 9);
 hist(as.numeric(herits[,2]), breaks=100, main = "Histogram of Heritability", xlim=c(0,1), axes=TRUE)
 abline(v = 0.25, col="red")
 dev.off()

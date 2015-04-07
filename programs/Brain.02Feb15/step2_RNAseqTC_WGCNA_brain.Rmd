@@ -2,9 +2,9 @@
 rm(list=ls())
 library(WGCNA)
 options(strainsAsFactors=FALSE)
-rData.path="/Volumes/saba/wgcna.PhenoGen/Rdata/"
-image.path="/Volumes/saba/wgcna.PhenoGen/images/"
-data.path="/Volumes/saba/wgcna.PhenoGen/data/"
+rData.path="/data2/saba/wgcna.PhenoGen/Rdata/"
+image.path="/data2/saba/wgcna.PhenoGen/images/"
+data.path="/data2/saba/wgcna.PhenoGen/data/"
 
 
 #################
@@ -26,14 +26,14 @@ dim(datExpr)
 powers = c(c(1:15), seq(from = 16, to=20, by=2))
 
 # Call the network topology analysis function
-sft = pickSoftThreshold(datExpr, powerVector = powers, verbose = 5)
+sft = pickSoftThreshold(datExpr, powerVector = powers, verbose = 5, corFnc="bicor")
 # Plot the results:
 sizeGrWindow(9, 5)
 par(mfrow = c(1,2));
 cex1 = 0.8;
 # Scale-free topology fit index as a function of the soft-thresholding power
 
-pdf(file=paste(image.path,"SoftThresholdingPower.Brain.20Feb15.pdf",sep=""))
+pdf(file=paste(image.path,"SoftThresholdingPower.Brain.26Feb15.pdf",sep=""))
 plot(sft$fitIndices[,1], -sign(sft$fitIndices[,3])*sft$fitIndices[,2],
 xlab="Soft Threshold (power)",ylab="Scale Free Topology Model Fit,signed R^2",type="n",
 main = paste("Scale independence"));
@@ -67,16 +67,16 @@ TC = colnames(datExpr)
 
 moduleMembership = cbind(TC, moduleLabels, moduleColors)
 length(unique(moduleMembership[,"moduleLabels"]))
-#length = 962 (includes the grey module so 800 modules);
-write.csv(moduleMembership, file=paste(data.path,"moduleMembership.brain.05Feb15.csv",sep=""),row.names=FALSE)
+#length = 1010 (includes the grey module so 1009 modules);
+write.csv(moduleMembership, file=paste(data.path,"moduleMembership.brain.26Feb15.csv",sep=""),row.names=FALSE)
 MEs = net$MEs
-save(net,moduleLabels,moduleColors,MEs,file=paste(rData.path,"HXBbrain.RNAseqTC.WGCNAconstruct.05Feb15.Rdata",sep=""))
+save(net,moduleLabels,moduleColors,MEs,file=paste(rData.path,"HXBbrain.RNAseqTC.WGCNAconstruct.26Feb15.Rdata",sep=""))
 
 sizes = as.numeric(table(moduleMembership[-which(moduleMembership[,"moduleLabels"]=="0"),"moduleColors"]))
 summary(sizes)
-#mean = 16.13
+#mean = 16.3
 #median = 8
-#max = 1780
+#max = 1527
 #min = 5
 
 MEs_noGray = MEs[,-which(colnames(MEs)=="ME0")]
@@ -84,4 +84,4 @@ write.csv(MEs_noGray, file=paste(data.path,"MEs.csv",sep=""))
 
 #the gray module (tc unassigned to a module) is how big:
 dim(moduleMembership[which(moduleMembership[,"moduleLabels"]=="0"),])
-#154 TC in the grey module
+#179 TC in the grey module

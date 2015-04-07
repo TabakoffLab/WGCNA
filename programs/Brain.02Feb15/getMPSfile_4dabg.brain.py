@@ -4,7 +4,7 @@
 import string
 
 ###  open output file  ###
-outputFile = "/Volumes/saba/wgcna.PhenoGen/data/RaEx-1_0-st-v1.r2.dt1.rn5.MASKED.HXB.RNAseqTC.05Feb16.mps"
+outputFile = "/Volumes/saba/wgcna.PhenoGen/data/RaEx-1_0-st-v1.r2.dt1.rn5.MASKED.HXB.RNAseqTC.26Feb15.mps"
 fout = open(outputFile, "wb")
 
 ####################################################
