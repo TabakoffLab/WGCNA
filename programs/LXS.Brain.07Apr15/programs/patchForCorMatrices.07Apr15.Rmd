@@ -1,0 +1,52 @@
+Change Adjacencey Matrices to Correlation Matrices
+========================================================
+
+
+Create Correlation Matrix For PhenoGen
+------------------------------------
+
+```{r}
+library(WGCNA)
+options(stringsAsFactors=FALSE)
+
+data.path="/data2/kiemele/WGCNA/LXSbrain_forPhenogen/20141114/"
+results.path="/data2/saba/WGCNA/LXSbrain_forPhenogen/20150407/"
+
+load(paste(data.path,"heritExprs_strainMeans.Rdata",sep=""))
+
+###############################
+# Create a Correlation Matrix #
+###############################
+
+corMatrix = bicor(t(heritMeans))
+dim(corMatrix)
+
+#####################################################
+# Create a List of Correlation Matrices (by Module) #
+#####################################################
+key = read.csv(paste(data.path,"moduleMembership.csv",sep=""))
+
+table(rownames(corMatrix)==key[,"TC"])
+
+modLabs = names(table(key[,"moduleLabels"]))
+modLabs = modLabs[-which(modLabs=="0")]
+
+TCwant = list()
+corMatricesByModule = list()
+for(i in modLabs){  
+	TCwant[[i]] = as.vector(key[which(key[,"moduleLabels"]==i),"TC"])
+	corMatricesByModule[[i]] = corMatrix[TCwant[[i]], TCwant[[i]]]
+}
+
+names(corMatricesByModule)
+key2 = unique(key[,c(2:3)])
+
+test = c()
+for(i in names(corMatricesByModule)){
+	test = c(test, as.character(key2[which(key2[,"moduleLabels"]==i), "moduleColors"]))
+}
+
+names(corMatricesByModule) = test
+save(corMatricesByModule, file=paste(results.path,"corMatricesByModule.07Apr15.Rdata",sep=""))
+```
+
